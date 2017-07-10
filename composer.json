@@ -1,0 +1,28 @@
+{
+    "name": "bentools/guzzle-queue-handler",
+    "description": "A queue handler to process Guzzle 6+ requests within a work queue.",
+    "keywords": ["php", "guzzle", "http", "client", "handler", "queue", "worker", "beanstalk", "pheanstalk", "redis", "rabbitMQ"],
+    "type": "library",
+    "license": "MIT",
+    "require": {
+        "guzzlehttp/guzzle": "^6.0",
+        "enqueue/enqueue": "^0.6.0"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "@stable",
+        "enqueue/fs": "0.6.*",
+        "symfony/var-dumper": "^3.3",
+        "symfony/console": "^3.3",
+        "symfony/process": "^3.3"
+    },
+    "autoload": {
+        "psr-4": {
+            "BenTools\\GuzzleQueueHandler\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "files": [
+            "vendor/symfony/var-dumper/Resources/functions/dump.php"
+        ]
+    }
+}
