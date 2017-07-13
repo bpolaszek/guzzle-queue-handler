@@ -10,6 +10,7 @@ use Interop\Queue\PsrConnectionFactory;
 use Interop\Queue\PsrContext;
 use Interop\Queue\PsrQueue;
 use Psr\Http\Message\RequestInterface;
+use Psr\Http\Message\UriInterface;
 
 class QueueHandler
 {
@@ -113,6 +114,9 @@ class QueueHandler
      */
     private function wrap(RequestInterface $request, array $options)
     {
+        if (isset($options['base_uri']) && $options['base_uri'] instanceof UriInterface) {
+            $options['base_uri'] = (string) $options['base_uri'];
+        }
         $message = $this->context->createMessage(json_encode([
             str($request->withRequestTarget((string) $request->getUri())),
             $options,
