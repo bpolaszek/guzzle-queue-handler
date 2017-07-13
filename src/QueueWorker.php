@@ -200,11 +200,9 @@ class QueueWorker implements \SplSubject
             $producer->send($queue, $this->context->createMessage(str($response)));
             $consumer->acknowledge($message);
         } catch (\Throwable $e) {
-            throw  $e;
             $message->setProperty('error', $e->getMessage());
             $consumer->reject($message);
         } catch (\Exception $e) {
-            throw  $e;
             $message->setProperty('error', $e->getMessage());
             $consumer->reject($message);
         }
