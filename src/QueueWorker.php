@@ -12,9 +12,14 @@ use Interop\Queue\PsrContext;
 use Interop\Queue\PsrMessage;
 use Interop\Queue\PsrQueue;
 use Psr\Http\Message\RequestInterface;
+use Psr\Http\Message\ResponseInterface;
+use SplObserver;
 
-class QueueWorker
+class QueueWorker implements \SplSubject
 {
+
+    const STATE_REQUEST = 1;
+    const STATE_RESPONSE = 2;
 
     /**
      * @var PsrContext
@@ -35,6 +40,26 @@ class QueueWorker
      * @var float
      */
     private $timeout;
+
+    /**
+     * @var \SplObserver[]
+     */
+    private $observers = [];
+
+    /**
+     * @var RequestInterface
+     */
+    private $currentRequest;
+
+    /**
+     * @var ResponseInterface
+     */
+    private $lastResponse;
+
+    /**
+     * @var int
+     */
+    private $state;
 
     /**
      * EnqueuePromisor constructor.
@@ -106,6 +131,30 @@ class QueueWorker
     }
 
     /**
+     * @return RequestInterface
+     */
+    public function getCurrentRequest()
+    {
+        return $this->currentRequest;
+    }
+
+    /**
+     * @return ResponseInterface
+     */
+    public function getLastResponse()
+    {
+        return $this->lastResponse;
+    }
+
+    /**
+     * @return int
+     */
+    public function getState()
+    {
+        return $this->state;
+    }
+
+    /**
      * @param PsrMessage  $message
      * @param PsrConsumer $consumer
      * @throws \GuzzleHttp\Exception\GuzzleException
@@ -132,8 +181,20 @@ class QueueWorker
         $options['synchronous'] = true;
         $options['http_errors'] = false;
 
+        $this->lastResponse = null;
+
         try {
+            $this->state = self::STATE_REQUEST;
+            $this->currentRequest = $request;
+            $this->notify();
+
             $response = $this->guzzle->send($request, $options);
+
+            $this->state = self::STATE_RESPONSE;
+            $this->lastResponse = $response;
+            $this->notify();
+
+
             $queue = $this->context->createQueue($replyTo);
             $producer = $this->context->createProducer();
             $producer->send($queue, $this->context->createMessage(str($response)));
@@ -157,5 +218,37 @@ class QueueWorker
     {
         $json = json_decode($message->getBody(), true);
         return $json;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function attach(SplObserver $observer)
+    {
+        $this->observers[] = $observer;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function detach(SplObserver $observer)
+    {
+        foreach ($this->observers as $o => $_observer) {
+            if ($_observer === $observer) {
+                unset($this->observers[$o]);
+            }
+        }
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function notify()
+    {
+        if (!empty($this->observers)) {
+            foreach ($this->observers as $observer) {
+                $observer->update($this);
+            }
+        }
     }
 }
