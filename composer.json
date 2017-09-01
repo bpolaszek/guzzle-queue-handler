@@ -6,16 +6,19 @@
     "license": "MIT",
     "require": {
         "guzzlehttp/guzzle": "^6.0",
-        "enqueue/enqueue": "^0.6.0"
+        "enqueue/enqueue": "^0.7"
     },
     "require-dev": {
         "phpunit/phpunit": "@stable",
         "squizlabs/php_codesniffer": "@stable",
         "satooshi/php-coveralls": "@stable",
-        "enqueue/fs": "0.6.*",
+        "enqueue/fs": "^0.7",
         "symfony/var-dumper": "^3.3",
         "symfony/console": "^3.3",
-        "symfony/process": "^3.3"
+        "symfony/process": "^3.3",
+        "enqueue/pheanstalk": "^0.7",
+        "enqueue/redis": "^0.7",
+        "enqueue/dbal": "^0.7"
     },
     "autoload": {
         "psr-4": {
